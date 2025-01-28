@@ -30,7 +30,7 @@ if strcmp(ext,'.gz')
     [header,tracks] = ea_trk_read(trkFile);
     rmdir(td, 's');
 else
-    [header, tracks] = ea_trk_read(trkFile);
+    [header, tracks] = ea_trk_read(trkFile,true);
 end
 
 % Get affine from reference

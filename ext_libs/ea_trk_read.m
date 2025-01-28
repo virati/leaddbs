@@ -1,4 +1,4 @@
-function [header,tracks] = ea_trk_read(filePath)
+function [header,tracks] = ea_trk_read(filePath, reorient)
 %TRK_READ - Load TrackVis .trk files
 %TrackVis displays and saves .trk files in LPS orientation. After import, this
 %function attempts to reorient the fibers to match the orientation of the
@@ -51,6 +51,10 @@ if header.hdr_size~=1000, ea_error('FTR-Header length is wrong'), end
 [tmp iy] = max(abs(header.image_orientation_patient(4:6)));
 iz = 1:3;
 iz([ix iy]) = [];
+if reorient == true
+    header.image_orientation_patient = [1 0 0 0 -1 0];
+    header.pad2(1:3) = 'LAS';
+end
 
 % Parse in body
 tracks(header.n_count).nPoints = 0;
@@ -73,7 +77,7 @@ for iTrk = 1:header.n_count
     if header.image_orientation_patient(3+iy) < 0
         coords(:,iy) = (header.dim(iy)-1) * header.voxel_size(iy) - coords(:,iy);
     end
-    tracks(iTrk).matrix(:,1:3) = coords;
+    tracks(iTrk).matrix(:,1:3) = coords(:,1:3);
 end
 
 fclose(fid);
