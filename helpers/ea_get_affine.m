@@ -10,6 +10,8 @@ if nargin < 2
 end
 
 % Remove volume index used in SPM (',1' in '/PATH/TO/image.nii.gz,1')
+%BELOW DOES NOT WORK WITH WINDOWS FOR SOME REASON - does not properly parse
+%the path and spits out empty strings.
 [fpath, ~, fext] = ea_niifileparts(nii);
 
 hdr = ea_fslhd([fpath, fext]);
