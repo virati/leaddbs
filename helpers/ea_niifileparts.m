@@ -11,6 +11,7 @@ function [trimpath, basename, ext, vol] = ea_niifileparts(niifile)
 % better fix.
 
 is_quote = 0;
+niifile = convertStringsToChars(niifile)
 if ispc
     if niifile(1) == '"'
         niifile = niifile(2:end-1); % remove double quotes and add after regex
