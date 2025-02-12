@@ -33,6 +33,14 @@ else
     [header, tracks] = ea_trk_read(trkFile);
 end
 
+disp('[Start] - Tweaking TRK Header')
+% Per Ningfei (Jan 2025)
+% Apparently the header orientation was off, and the LAS 
+header.image_orientation_patient = [1 0 0 0 -1 0]; 
+header.pad2 = 'LAS';
+header.voxel_order = 'LAS';
+disp('[Done] - Tweaking TRK Header')
+
 % Get affine from reference
 if ismember(ref, {'3', 'select', 'ask', 'interactive'})
     answer = questdlg('Please specify the reference space of the trk file.', '', 'Lead-DBS / MNI152 NLin 2009b Asym', 'Choose a reference NIfTI file', 'Lead-DBS / MNI152 NLin 2009b Asym');
