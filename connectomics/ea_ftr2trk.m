@@ -1,4 +1,4 @@
-function ea_ftr2trk(ftrfile, specs, LPS)
+function ea_ftr2trk(ftrfile, out_trk_file_path, specs, LPS)
 % export FTR matrix to TrackVis trk format
 %
 % specs can also be the path of the nifti file which defines the space. If
@@ -108,7 +108,7 @@ end
 
 %% write .trk file
 disp('Writing trk file...');
-ea_trk_write(header,tracks,[directory,filesep,ftrname,'.trk']);
+ea_trk_write(header,tracks,out_trk_file_path);
 
 disp('Conversion finished.');
 

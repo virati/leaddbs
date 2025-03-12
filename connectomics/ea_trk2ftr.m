@@ -7,7 +7,7 @@ function [fibers, idx] = ea_trk2ftr(trkFile, ref, saveFTR)
 %   3        - Interactively select ref type (1 or 2 above)
 %   [string] - Path of a NIfTI file defining the reference space
 %
-% saveFTR: whether to save FTR data to file using the same filename
+% saveFTR: if non-None
 
 if ~exist('ref', 'var')
     ref = 'mni';
@@ -78,16 +78,20 @@ fibers(:, 1:3) = fibers(:, 1:3)./header.voxel_size;
 if strcmp(header.pad2(1), 'L') && affine(1) > 0 || strcmp(header.pad2(1), 'R') && affine(1) < 0
     % Flip L and R
     fibers(:, 1) = header.dim(1) - 1 - fibers(:, 1);
+    disp('Flipping LR')
 end
 
 if strcmp(header.pad2(2), 'P') && affine(6) > 0 || strcmp(header.pad2(2), 'A') && affine(6) < 0
     % Flip P and A
-    fibers(:, 2) = header.dim(2) - 1 - fibers(:, 2);
+
 end
+fibers(:, 2) = header.dim(2) - 1 - fibers(:, 2);
+disp('Flipping AP [FORCED]')
 
 if strcmp(header.pad2(3), 'I') && affine(11) > 0 || strcmp(header.pad2(3), 'S') && affine(11) < 0
     % Flip I and S
     fibers(:, 3) = header.dim(3) - 1 - fibers(:, 3);
+    disp('Flipping IS')
 end
 
 % Convert voxel to mm 
@@ -96,8 +100,8 @@ fibers(:, 1:3) = ea_vox2mm(fibers(:, 1:3), affine);
 fibers = single(fibers);
 
 % Optionally save ftr mat
-if saveFTR
-    FTRFile = replace(erase(trkFile, '.gz'), '.trk', '.mat');
+if isstring(saveFTR)
+    FTRFile = saveFTR;
 
     if isfile(FTRFile)
         answer = questdlg('File already exists!', '', 'Overwrite', 'Specify a New Name', 'Overwrite');
