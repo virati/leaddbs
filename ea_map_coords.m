@@ -229,10 +229,10 @@ if ~isempty(transform)
 
                 % apply transform, need transpose becuase ANTs prefer N*3 like row vector
                 try
-                    XYZ_dest_mm = ea_antspy_apply_transforms_to_points(XYZ_src_mm(1:3,:)', transform, useinverse)';
+                    XYZ_dest_mm = ea_ants_apply_transforms_to_points(XYZ_src_mm(1:3,:)', transform, useinverse)';
                 catch
                     ea_cprintf('CmdWinWarnings', 'Failed to run ANTsPy! Fallback to ANTs...\n');
-                    XYZ_dest_mm = ea_ants_apply_transforms_to_points(XYZ_src_mm(1:3,:)', transform, useinverse)';
+                    XYZ_dest_mm = ea_antspy_apply_transforms_to_points(XYZ_src_mm(1:3,:)', transform, useinverse)';
                 end
 
                 % LPS to RAS, restore to RAS coords
@@ -308,7 +308,7 @@ if ~isempty(transform)
             % apply transform, need transpose becuase ANTs prefer N*3
             % like row vector
             try
-                XYZ_dest_mm = ea_antspy_apply_transforms_to_points(XYZ_src_mm(1:3,:)', subjDir, useinverse)';
+                XYZ_dest_mm = ea_ants_apply_transforms_to_points(XYZ_src_mm(1:3,:)', subjDir, useinverse)';
             catch
                 ea_cprintf('CmdWinWarnings', 'Failed to run ANTsPy! Fallback to ANTs...\n');
                 XYZ_dest_mm = ea_ants_apply_transforms_to_points(XYZ_src_mm(1:3,:)', subjDir, useinverse)';
@@ -389,7 +389,7 @@ if ~isempty(transform)
                 % apply transform, need transpose becuase ANTs prefer N*3
                 % like row vector
                 try
-                    XYZ_dest_mm = ea_antspy_apply_transforms_to_points(XYZ_src_mm(1:3,:)', transform, useinverse)';
+                    XYZ_dest_mm = ea_ants_apply_transforms_to_points(XYZ_src_mm(1:3,:)', transform, useinverse)';
                 catch
                     ea_cprintf('CmdWinWarnings', 'Failed to run ANTsPy! Fallback to ANTs...\n');
                     XYZ_dest_mm = ea_ants_apply_transforms_to_points(XYZ_src_mm(1:3,:)', transform, useinverse)';
