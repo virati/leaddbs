@@ -70,7 +70,7 @@ if iscell(I)
 
 else
     if isnan(group)
-        title=['Disc. Fiber prediction ',upper(cvs)];
+        title=['[Exported] Disc. Fiber prediction ',upper(cvs)];
         groupsuffx='';
     else
         title=['Group ',num2str(group),': Disc. Fiber prediction ',upper(cvs)];
@@ -81,6 +81,10 @@ else
     else
         h=ea_corrbox(I(~isnan(Ihat)),Ihat(~isnan(Ihat)),'permutation',{title,empiricallabel,fibscorelabel},groupID(~isnan(Ihat)),[],groupColors);
     end
+    % save raw r^2 values here VRT TODO
+    %numpy_file_save_prepend = input('What would you like to call the dump of I + Ihat?','s');
+    %save(strcat(numpy_file_save_prepend,'latest_r2_sc_subset.mat'), 'I', 'Ihat','-v7');
+
     assignin('base','Empirical',I);
     assignin('base','Estimate',Ihat);
     try saveas(h,[fileparts(tractset.leadgroup),filesep,'fiberfiltering',filesep,tractset.ID,'_',tractset.responsevarlabel,'_',cvs,groupsuffx,'.png']); end

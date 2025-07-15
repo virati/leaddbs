@@ -47,7 +47,7 @@ switch strategy
         if ~isfield(customconfig, 'permcorrtype')
             customconfig.permcorrtype = 'Spearman';
         end
-        [I,Ihat,R0,R1,pperm,~,val_struct]=tractset.lnopb(customconfig.permcorrtype,silent);
+        [I,Ihat,R0,R1,pperm,~,val_struct]=tractset.lnopb(customconfig.permcorrtype,silent); %wtf are I, Ihat, R0, R1, pperm, lnopb, etc.? Need more descriptive variables names
         if ~silent
             if strcmp(tractset.multitractmode,'Split & Color By PCA')
                 I=mat2cell( squeeze(I(1,:,:)), length(tractset.patientselection), ones(1, length(tractset.subscore.vars)));
@@ -157,6 +157,7 @@ switch strategy
             sel = test;
         end
     case 'Custom (Subcohorts)'
+        % VRT TODO Pay Attention Here
         tractset.nestedLOO = false;
         tractset.useExternalModel = false;
         cvp.NumTestSets = 1;

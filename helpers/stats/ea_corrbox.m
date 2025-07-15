@@ -5,7 +5,7 @@ function [h,R,p,g] = ea_corrbox(varargin)
 % ea_corrplot input: (X,Y,permutation,labels,group1,group2,colors,markers)
 
 if size(varargin{1},2) > 1
-    [h,R,p,g] = ea_glmplot(varargin{:});
+    [h,R,p,g] = ea_glmplot(varargin{:}); %wtf are h, R, p, g?
     return
 end
 
