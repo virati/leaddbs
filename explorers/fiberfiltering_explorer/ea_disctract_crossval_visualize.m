@@ -70,7 +70,7 @@ if iscell(I)
 
 else
     if isnan(group)
-        title=['[Exported] Disc. Fiber prediction ',upper(cvs)];
+        title=['[Exportable] Disc. Fiber prediction ',upper(cvs)];
         groupsuffx='';
     else
         title=['Group ',num2str(group),': Disc. Fiber prediction ',upper(cvs)];
