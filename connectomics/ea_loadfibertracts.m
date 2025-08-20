@@ -12,7 +12,7 @@ if endsWith(cfile, {'.trk', '.trk.gz'})
     cfile = replace(erase(cfile, '.gz'), '.trk', '.mat');
 end
 
-%%
+%% Load in file and break out pieces
 fibinfo = load(cfile);
 if ~isfield(fibinfo,'ea_fibformat')
     ea_convertfibs2newformat(fibinfo,cfile);
@@ -23,26 +23,27 @@ fibers_fibfilt = fibinfo.fibcell{1,hemisphere_idx};
 total_number_of_streamlines = length(fibers_fibfilt);
 usedidx = fibinfo.usedidx{1,hemisphere_idx};
 
+%% Core Processing
+fibers_matrix = [];
 %create proper indices here
-for cc = 1:total_number_of_streamlines
-    
+for stream_idx = 1:total_number_of_streamlines
+    streamline = fibers_fibfilt{stream_idx};
+    number_of_points = length(streamline);
+    fibers_matrix = [fibers_matrix;horzcat(streamline, repmat(stream_idx, number_of_points,1))];
 end
 
-fibers_concatenated_stripped = cell2mat(fibers_fibfilt);
-
-[~,repeat_count,which_unique_element]=unique(fibers(:,4));
+[~,repeat_count,which_unique_element]=unique(fibers_matrix(:,4));
 %iax = count of how many times it's repeated
 %iac = which unique element is this
-for fib=1:length(iax)-1
-    new_idx(fib,1)=iax(fib+1)-iax(fib);
+for fib=1:length(repeat_count)-1
+    new_idx(fib,1)=repeat_count(fib+1)-repeat_count(fib);
 end
 % add last entry
-idx(fib+1,1)=sum(fibers(:,4)==max(fibers(:,4)));
-fibers(:,4)=iac;
+new_idx(fib+1,1)=sum(fibers_matrix(:,4)==max(fibers_matrix(:,4)));
+fibers_matrix(:,4)=which_unique_element;
 
-
-[fibers_concatenated_stripped, new_idx]
-
+fibers = fibers_matrix;
+idx = fibers_matrix(:,4);
 
 
 %%
