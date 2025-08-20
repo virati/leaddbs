@@ -1,6 +1,10 @@
-function [fibers,idx,voxmm,mat,vals]=ea_loadfibertracts(cfile, ref)
+function [fibers,idx,voxmm,mat,vals]=ea_loadfibertracts(cfile, ref, hemisphere_idx)
 if ~exist('ref','var')
     ref = 'mni';
+end
+if ~exist('hemisphere_idx','var')
+    hemisphere_idx = 1;
+    disp('Doing only one hemisphere (idx = 1; left?)')
 end
 
 if endsWith(cfile, {'.trk', '.trk.gz'})
@@ -8,15 +12,41 @@ if endsWith(cfile, {'.trk', '.trk.gz'})
     cfile = replace(erase(cfile, '.gz'), '.trk', '.mat');
 end
 
+%%
 fibinfo = load(cfile);
 if ~isfield(fibinfo,'ea_fibformat')
     ea_convertfibs2newformat(fibinfo,cfile);
     fibinfo = load(cfile);
 end
 
-fibers = fibinfo.fibers;
-idx = fibinfo.idx;
+fibers_fibfilt = fibinfo.fibcell{1,hemisphere_idx};
+total_number_of_streamlines = length(fibers_fibfilt);
+usedidx = fibinfo.usedidx{1,hemisphere_idx};
 
+%create proper indices here
+for cc = 1:total_number_of_streamlines
+    
+end
+
+fibers_concatenated_stripped = cell2mat(fibers_fibfilt);
+
+[~,repeat_count,which_unique_element]=unique(fibers(:,4));
+%iax = count of how many times it's repeated
+%iac = which unique element is this
+for fib=1:length(iax)-1
+    new_idx(fib,1)=iax(fib+1)-iax(fib);
+end
+% add last entry
+idx(fib+1,1)=sum(fibers(:,4)==max(fibers(:,4)));
+fibers(:,4)=iac;
+
+
+[fibers_concatenated_stripped, new_idx]
+
+
+
+%%
+% Below is misleading
 if isfield(fibinfo,'vals')
     vals=fibinfo.vals;
 else

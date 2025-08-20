@@ -1,4 +1,4 @@
-function ea_ftr2trk(ftrfile, specs, LPS)
+function ea_ftr2trk(ftrfile, specs, LPS, hemisphere, outfile)
 % export FTR matrix to TrackVis trk format
 %
 % specs can also be the path of the nifti file which defines the space. If
@@ -17,7 +17,7 @@ if isempty(ext)
 end
 
 disp('Loading FTR-File...');
-[fibs, idx, voxmm] = ea_loadfibertracts(ftrfile);
+[fibs, idx, voxmm] = ea_loadfibertracts(ftrfile,1, hemisphere);
 
 % Convert ONE-BASED indexing to ZERO-BASED indexing
 if strcmp(voxmm,'vox')
@@ -77,12 +77,15 @@ header.hdr_size = 1000;
 
 %% convert data
 disp('Constructing data...');
+npts_in_tract = idx;
 tracks = struct('nPoints',nan,'matrix',nan);
-offset = 1;
-for track_number=1:length(idx)
-    tracks(1,track_number).nPoints = idx(track_number);
-    tracks(1,track_number).matrix = fibs(offset:offset+idx(track_number)-1,1:3);
-    offset = offset+idx(track_number);
+offset_idx = 1;
+n_total_tracks = length(npts_in_tract);
+for track_number=1:n_total_tracks
+    tracks(1,track_number).nPoints = npts_in_tract(track_number);
+    new_endpt = offset_idx+npts_in_tract(track_number);
+    tracks(1,track_number).matrix = fibs(offset_idx:new_endpt-1,1:3);
+    offset_idx = new_endpt;
 end
 
 if strcmp(voxmm,'mm') % have to retranspose to vox
@@ -90,7 +93,7 @@ if strcmp(voxmm,'mm') % have to retranspose to vox
     for i=1:length(tracks)
         tracks(i).matrix = [tracks(i).matrix,ones(size(tracks(i).matrix,1),1)]';
         tracks(i).matrix = specs.affine\tracks(i).matrix;
-        if exist('LPS', 'var') && LPS
+        if exist('LPS', 'var')
             tracks(i).matrix(1,:) = refhdr.dim1-1-tracks(i).matrix(1,:);
             tracks(i).matrix(2,:) = refhdr.dim2-1-tracks(i).matrix(2,:);
         end
@@ -108,7 +111,7 @@ end
 
 %% write .trk file
 disp('Writing trk file...');
-ea_trk_write(header,tracks,[directory,filesep,ftrname,'.trk']);
+ea_trk_write(header,tracks,outfile);
 
 disp('Conversion finished.');
 
