@@ -77,16 +77,14 @@ header.hdr_size = 1000;
 
 %% convert data
 disp('Constructing data...');
-npts_in_tract = idx;
 tracks = struct('nPoints',nan,'matrix',nan);
-offset_idx = 1;
-n_total_tracks = length(npts_in_tract);
-for track_number=1:n_total_tracks
-    tracks(1,track_number).nPoints = npts_in_tract(track_number);
-    new_endpt = offset_idx+npts_in_tract(track_number);
-    tracks(1,track_number).matrix = fibs(offset_idx:new_endpt-1,1:3);
-    offset_idx = new_endpt;
+offset = 1;
+for track_number=1:length(idx)
+    tracks(1,track_number).nPoints = idx(track_number);
+    tracks(1,track_number).matrix = fibs(offset:offset+idx(track_number)-1,1:3);
+    offset = offset+idx(track_number);
 end
+
 
 if strcmp(voxmm,'mm') % have to retranspose to vox
     disp('mm to vox conversion...');
