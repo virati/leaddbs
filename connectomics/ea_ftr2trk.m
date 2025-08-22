@@ -71,20 +71,24 @@ header.invert_z = 0;
 header.swap_xy = 0;
 header.swap_yz = 0;
 header.swap_zx = 0;
-header.n_count = length(idx);% header.invert_x = 1;
+header.n_count = max(idx);% header.invert_x = 1;
 header.version = 2;
 header.hdr_size = 1000;
 
 %% convert data
 disp('Constructing data...');
+num_streamlines = max(fibs(:,4));
+[idx_labels,loc_of_idx_label,~] = unique(idx); %remember, idx == fibs(:,4) in the current refactor
+npts_in_tract = [diff(loc_of_idx_label); length(idx) - loc_of_idx_label(end) + 1]; %need that last kludge because unique does not return number of each unique element directly
 tracks = struct('nPoints',nan,'matrix',nan);
-offset = 1;
-for track_number=1:length(idx)
-    tracks(1,track_number).nPoints = idx(track_number);
-    tracks(1,track_number).matrix = fibs(offset:offset+idx(track_number)-1,1:3);
-    offset = offset+idx(track_number);
-end
+offset_idx = 1;
 
+for track_number=1:num_streamlines
+    tracks(1,track_number).nPoints = npts_in_tract(track_number);
+    new_endpt = offset_idx+npts_in_tract(track_number);
+    tracks(1,track_number).matrix = fibs(offset_idx:new_endpt-1,1:3);
+    offset_idx = new_endpt;
+end
 
 if strcmp(voxmm,'mm') % have to retranspose to vox
     disp('mm to vox conversion...');
