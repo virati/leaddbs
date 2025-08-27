@@ -1,4 +1,4 @@
-function [fibers,idx,voxmm,mat,vals]=ea_loadfibertracts(cfile, ref, hemisphere_idx)
+function [fibers,idx,voxmm,mat,vals]=ea_loadfibertracts(cfile, ref, hemisphere_idx, full_connectome)
 if ~exist('ref','var')
     ref = 'mni';
 end
@@ -19,19 +19,23 @@ if ~isfield(fibinfo,'ea_fibformat')
     fibinfo = load(cfile);
 end
 
-%check if the hemisphere_idx even exists in fibinfo
-disp(length(fibinfo.fibcell{1,hemisphere_idx}))
-if length(fibinfo.fibcell{1, hemisphere_idx}) == 0
-    fibers = 0
-    idx = 0
-    voxmm = 0
-    mat = 0
-    vals = 0
-    return
-end
-fibers_fibfilt = fibinfo.fibcell{1,hemisphere_idx};
-total_number_of_streamlines = length(fibers_fibfilt);
-usedidx = fibinfo.usedidx{1,hemisphere_idx};
+
+if full_connectome == false
+    %check if the hemisphere_idx even exists in fibinfo
+    disp(length(fibinfo.fibcell{1,hemisphere_idx}))
+    if length(fibinfo.fibcell{1, hemisphere_idx}) == 0
+        fibers = 0
+        idx = 0
+        voxmm = 0
+        mat = 0
+        vals = 0
+        return
+    end
+    fibers_fibfilt = fibinfo.fibcell{1,hemisphere_idx};
+    total_number_of_streamlines = length(fibers_fibfilt);
+    usedidx = fibinfo.usedidx{1,hemisphere_idx};
+else
+    fiber_fibfilt = fibinfo
 
 %% Core Processing
 fibers_matrix = [];
