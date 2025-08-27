@@ -18,6 +18,10 @@ end
 
 disp('Loading FTR-File...');
 [fibs, idx, voxmm] = ea_loadfibertracts(ftrfile,1, hemisphere);
+if fibs == 0
+    disp("No Corresponding File (probably zero engagement of that hemisphere).")
+    return
+end
 
 % Convert ONE-BASED indexing to ZERO-BASED indexing
 if strcmp(voxmm,'vox')
