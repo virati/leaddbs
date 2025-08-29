@@ -20,22 +20,20 @@ if ~isfield(fibinfo,'ea_fibformat')
 end
 
 
-if full_connectome == false
-    %check if the hemisphere_idx even exists in fibinfo
-    disp(length(fibinfo.fibcell{1,hemisphere_idx}))
-    if length(fibinfo.fibcell{1, hemisphere_idx}) == 0
-        fibers = 0
-        idx = 0
-        voxmm = 0
-        mat = 0
-        vals = 0
-        return
-    end
-    fibers_fibfilt = fibinfo.fibcell{1,hemisphere_idx};
-    total_number_of_streamlines = length(fibers_fibfilt);
-    usedidx = fibinfo.usedidx{1,hemisphere_idx};
-else
-    fiber_fibfilt = fibinfo
+
+%check if the hemisphere_idx even exists in fibinfo
+disp(length(fibinfo.fibcell{1,hemisphere_idx}))
+if length(fibinfo.fibcell{1, hemisphere_idx}) == 0
+    fibers = 0
+    idx = 0
+    voxmm = 0
+    mat = 0
+    vals = 0
+    return
+end
+fibers_fibfilt = fibinfo.fibcell{1,hemisphere_idx};
+total_number_of_streamlines = length(fibers_fibfilt);
+usedidx = fibinfo.usedidx{1,hemisphere_idx};
 
 %% Core Processing
 fibers_matrix = [];
