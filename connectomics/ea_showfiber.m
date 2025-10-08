@@ -27,7 +27,7 @@ end
 fibersnew = mat2cell(fibers(:, 1:3), fibidx);
 
 %below screws up with synthetic
-not_synthetic=true;
+not_synthetic=false;
 if not_synthetic
 fibersnew = cellfun(@(f,len) f(round(linspace(1,len,round(len/sampleFactor))),:), fibersnew, num2cell(cellfun(@(p) size(p,1), fibersnew)), 'UniformOutput', 0);
 end
@@ -56,7 +56,7 @@ end
 
 % Downsample fibers. TODO: Need further validation!
 numFiberThreshold = 1000;
-downsampleFibers = 1;
+downsampleFibers = 0;
 idx = 1:length(fibersnew);
 if downsampleFibers
     if length(fibersnew) < numFiberThreshold
