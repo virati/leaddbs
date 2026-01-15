@@ -4,6 +4,12 @@ function best_affine = ea_get_affine(nii, type)
 % Default type is 'SPM', the affine matrix is for one-based voxel to world
 % space transformation. Otherwise, the affine matrix is used for zero-based
 % calculation.
+% OPTIMIZED: Uses persistent cache to avoid repeated spm_vol calls
+
+persistent affine_cache;
+if isempty(affine_cache)
+    affine_cache = struct('path', {}, 'type', {}, 'affine', {}, 'time', {});
+end
 
 if nargin < 2
     type = 'SPM';
@@ -11,6 +17,16 @@ end
 
 % Remove volume index used in SPM (',1' in '/PATH/TO/image.nii.gz,1')
 [fpath, ~, fext] = ea_niifileparts(nii);
+cache_key = [fpath, fext];
+
+% Check cache first
+for i = 1:length(affine_cache)
+    if strcmp(affine_cache(i).path, cache_key) && strcmp(affine_cache(i).type, type)
+        best_affine = affine_cache(i).affine;
+        affine_cache(i).time = now(); % Update access time
+        return;
+    end
+end
 
 % Try spm_vol first (faster and more reliable)
 if strcmp(fext, '.nii')
@@ -21,12 +37,21 @@ if strcmp(fext, '.nii')
     switch type
         case {'spm', 'SPM', 1, '1'}  % SPM type, one-based (already correct)
             best_affine = affine;
-            return;
         case {0, '0'}  % zero-based, need to adjust
             best_affine = affine;
             best_affine(:,4) = best_affine(:,4) + sum(best_affine(:,1:3),2);
-            return;
     end
+
+    % Add to cache before returning
+    if length(affine_cache) >= 10
+        [~, oldest_idx] = min([affine_cache.time]);
+        affine_cache(oldest_idx) = [];
+    end
+    affine_cache(end+1).path = cache_key;
+    affine_cache(end).type = type;
+    affine_cache(end).affine = best_affine;
+    affine_cache(end).time = now();
+    return;
 else
     % Fallback to ea_fslhd if spm_vol fails
     hdr = ea_fslhd([fpath, fext]);
@@ -71,3 +96,14 @@ switch type
     case {0, '0'}  % other types, zero-based
         best_affine = affine;
 end
+
+% Add to cache (keep only last 10 to avoid memory issues)
+if length(affine_cache) >= 10
+    % Remove oldest
+    [~, oldest_idx] = min([affine_cache.time]);
+    affine_cache(oldest_idx) = [];
+end
+affine_cache(end+1).path = cache_key;
+affine_cache(end).type = type;
+affine_cache(end).affine = best_affine;
+affine_cache(end).time = now();

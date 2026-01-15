@@ -1,4 +1,4 @@
-function [fibers, idx] = ea_trk2ftr(trkFile, ref, saveFTR)
+function [fibers, idx] = ea_trk2ftr(header, tracks, ref)
 % Convert trk to ftr (fibers format in Lead-DBS)
 %
 % ref can be:
@@ -17,23 +17,6 @@ if isnumeric(ref)
     ref = num2str(ref);
 end
 
-if ~exist('saveFTR', 'var')
-    saveFTR = 0;
-end
-
-% read .trk file
-[~, fn, ext] = fileparts(trkFile);
-if strcmp(ext,'.gz')
-    uuid = ea_generate_uuid;
-    td = [ea_getleadtempdir, uuid];
-    mkdir(td);
-    gunzip(trkFile, td);
-    trkFile = fullfile(td, fn);
-    [header,tracks] = ea_trk_read(trkFile);
-    rmdir(td, 's');
-else
-    [header, tracks] = ea_trk_read(trkFile);
-end
 
 % Get affine from reference
 if ismember(ref, {'3', 'select', 'ask', 'interactive'})
@@ -94,23 +77,3 @@ end
 fibers(:, 1:3) = ea_vox2mm(fibers(:, 1:3), affine);
 
 fibers = single(fibers);
-
-% Optionally save ftr mat
-if saveFTR
-    FTRFile = replace(erase(trkFile, '.gz'), '.trk', '.mat');
-
-    if isfile(FTRFile)
-        answer = questdlg('File already exists!', '', 'Overwrite', 'Specify a New Name', 'Overwrite');
-        if isempty(answer)
-            return;
-        elseif strcmp(answer, 'Specify a New Name')
-            [fname, pathname] = uiputfile({'*.mat'}, 'Choose a reference NIfTI file', FTRFile);
-            FTRFile = fullfile(pathname, fname);
-        end
-    end
-
-    ea_fibformat = '1.0';
-    fourindex = 1;
-    voxmm = 'mm';
-    save(FTRFile, 'ea_fibformat', 'fibers', 'fourindex', 'idx', 'voxmm', '-v7.3');
-end

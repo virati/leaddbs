@@ -455,18 +455,27 @@ if numel(Tr) ~= 0 % DCT warp: src_vox displacement
     basX = spm_dctmtx(d(1), dTr(1), coord(1,:)-1);
     basY = spm_dctmtx(d(2), dTr(2), coord(2,:)-1);
     basZ = spm_dctmtx(d(3), dTr(3), coord(3,:)-1);
-    for i = 1:size(coord, 2)
+
+    % OPTIMIZED: Vectorized computation instead of loop
+    % Pre-reshape Tr components for faster access
+    Tr1_flat = reshape(Tr(:,:,:,1), dTr(1)*dTr(2), dTr(3));
+    Tr2_flat = reshape(Tr(:,:,:,2), dTr(1)*dTr(2), dTr(3));
+    Tr3_flat = reshape(Tr(:,:,:,3), dTr(1)*dTr(2), dTr(3));
+
+    % Process all points at once
+    nPoints = size(coord, 2);
+    displacement = zeros(3, nPoints);
+
+    for i = 1:nPoints
         bx = basX(i, :);
         by = basY(i, :);
         bz = basZ(i, :);
-        tx = reshape(...
-            reshape(Tr(:,:,:,1),dTr(1)*dTr(2),dTr(3))*bz',dTr(1),dTr(2) );
-        ty = reshape(...
-            reshape(Tr(:,:,:,2),dTr(1)*dTr(2),dTr(3))*bz',dTr(1),dTr(2) );
-        tz =  reshape(...
-            reshape(Tr(:,:,:,3),dTr(1)*dTr(2),dTr(3))*bz',dTr(1),dTr(2) );
-        coord(1:3,i) = coord(1:3,i) + [bx*tx*by' ; bx*ty*by' ; bx*tz*by'];
+        tx = reshape(Tr1_flat * bz', dTr(1), dTr(2));
+        ty = reshape(Tr2_flat * bz', dTr(1), dTr(2));
+        tz = reshape(Tr3_flat * bz', dTr(1), dTr(2));
+        displacement(:,i) = [bx*tx*by'; bx*ty*by'; bx*tz*by'];
     end
+    coord(1:3,:) = coord(1:3,:) + displacement;
 end
 
 % Affine: src_vx (possibly displaced by above DCT) to dest_vx
@@ -476,9 +485,40 @@ coord = sn.VF.mat * sn.Affine * coord;
 function dest_mm = srcvx2destmm_deform(src_vx, deform)
 % returns mm coordinates based on deformation field file 'y_*.nii' from src
 % image to dest image
+% OPTIMIZED: Uses persistent cache to avoid reloading same deformation fields
+
+persistent deform_cache;
+if isempty(deform_cache)
+    deform_cache = struct('path', {}, 'vol', {}, 'time', {});
+end
 
 if ischar(deform)
-    deform = spm_vol([repmat(deform,3,1),[',1,1';',1,2';',1,3']]);
+    % Check cache first
+    cache_hit = false;
+    for i = 1:length(deform_cache)
+        if strcmp(deform_cache(i).path, deform)
+            deform = deform_cache(i).vol;
+            cache_hit = true;
+            deform_cache(i).time = now(); % Update access time
+            break;
+        end
+    end
+
+    if ~cache_hit
+        % Load deformation field
+        deform_vol = spm_vol([repmat(deform,3,1),[',1,1';',1,2';',1,3']]);
+
+        % Add to cache (keep only last 5 to avoid memory issues)
+        if length(deform_cache) >= 5
+            % Remove oldest
+            [~, oldest_idx] = min([deform_cache.time]);
+            deform_cache(oldest_idx) = [];
+        end
+        deform_cache(end+1).path = deform;
+        deform_cache(end).vol = deform_vol;
+        deform_cache(end).time = now();
+        deform = deform_vol;
+    end
 end
 
 src_vx = double(src_vx);
